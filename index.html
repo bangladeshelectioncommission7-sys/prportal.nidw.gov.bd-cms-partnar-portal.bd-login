@@ -1,234 +1,162 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CMS - NID DATABASE পার্টনার পোর্টাল</title>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: Arial, Helvetica, sans-serif; background: #f4f6f9; min-height: 100vh; }
-        .header { background: #0b5ed7; color: white; padding: 15px; text-align: center; font-size: 20px; font-weight: bold; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; }
-        .logo { width: 50px; margin-right: 10px; }
-        .container { display: flex; flex-direction: row; min-height: calc(100vh - 60px); }
-        .sidebar { width: 220px; background: #fff; border-right: 1px solid #ddd; }
-        .sidebar ul { list-style: none; }
-        .sidebar ul li a { display: block; padding: 12px; text-decoration: none; color: #000; cursor: pointer; }
-        .sidebar ul li a:hover { background: #f0f0f0; }
-        .content { flex: 1; padding: 20px; }
-        .box { background: #fff; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
-        .form-control { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; }
-        .btn { padding: 10px 20px; background: #0b5ed7; border: none; color: white; cursor: pointer; border-radius: 5px; font-size: 16px; }
-        .btn:hover { background: #0949a5; }
-        #loginContainer { display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
-        #loginForm, #registerForm { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 0 20px rgba(0,0,0,0.15); width: 100%; max-width: 400px; text-align: center; }
-        #message, #regMessage { margin-top: 15px; font-weight: bold; min-height: 22px; }
-        .success { color: green; }
-        .error { color: red; }
-        #dashboard { display: none; }
-        
-        #loadingOverlay {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.6); z-index: 9999;
-            justify-content: center; align-items: center;
-        }
-        .spinner { width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid #0b5ed7; border-radius: 50%; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .loading-text { margin-top: 15px; color: white; font-size: 18px; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>বাংলাদেশ নির্বাচন কমিশন</title>
 
-        #accessMessage { color: red; font-weight: bold; margin-top: 20px; text-align: center; }
-        .back-btn { margin-bottom: 15px; width: auto; }
-    </style>
+<style>
+    body {
+        margin: 0;
+        font-family: "SolaimanLipi", Arial, sans-serif;
+        background: #f1f3f6;
+
+        /* ❌ Text select disable */
+        user-select: none;
+        -webkit-user-select: none;
+        -ms-user-select: none;
+
+        /* ❌ Mobile callout disable */
+        -webkit-touch-callout: none;
+    }
+
+    /* Header */
+    .top-bar {
+        background: #003087;
+        color: white;
+        padding: 10px 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .top-bar img {
+        width: 45px;
+        pointer-events: none;
+    }
+
+    .top-bar .title {
+        font-size: 18px;
+        font-weight: bold;
+        line-height: 1.2;
+    }
+
+    .sub-bar {
+        background: white;
+        border-bottom: 1px solid #ddd;
+        padding: 8px 15px;
+        font-size: 14px;
+        color: #333;
+    }
+
+    .main {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: calc(100vh - 90px);
+        padding: 15px;
+    }
+
+    .notice-wrapper {
+        width: 100%;
+        max-width: 600px;
+    }
+
+    .alert-box {
+        background: #fff;
+        border: 1px solid #d9534f;
+        border-top: 6px solid #d9534f;
+        border-radius: 6px;
+        padding: 25px;
+        text-align: center;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .alert-title {
+        color: #d9534f;
+        font-size: 20px;
+        font-weight: bold;
+        margin-bottom: 15px;
+    }
+
+    .alert-text {
+        font-size: 17px;
+        color: #222;
+        line-height: 1.7;
+        font-weight: bold;
+    }
+
+    .footer {
+        margin-top: 20px;
+        font-size: 15px;
+        font-weight: bold;
+    }
+</style>
 </head>
-<body>
 
-    <!-- লগইন / রেজিস্টার -->
-    <div id="loginContainer">
-        <div>
-            <form id="loginForm">
-                <img class="logo" src="https://upload.wikimedia.org/wikipedia/commons/9/9a/Election_Commission_Logo.svg" alt="লোগো">
-                <h3>CMS - NID DATABASE পার্টনার পোর্টাল</h3>
-                <input type="text" id="userid" class="form-control" placeholder="ইউজার আইডি" required>
-                <input type="password" id="password" class="form-control" placeholder="পাসওয়ার্ড" required>
-                <button type="submit" class="btn">লগইন</button>
-                <p style="margin-top:15px;">অ্যাকাউন্ট নেই? <a href="#" id="showRegister">রেজিস্টার করুন</a></p>
-                <div id="message"></div>
-            </form>
+<body oncontextmenu="return false">
 
-            <form id="registerForm" style="display:none;">
-                <img class="logo" src="https://upload.wikimedia.org/wikipedia/commons/9/9a/Election_Commission_Logo.svg" alt="লোগো">
-                <h3>রেজিস্ট্রেশন</h3>
-                <input type="text" id="regUserid" class="form-control" placeholder="ইউজার আইডি" required>
-                <input type="password" id="regPassword" class="form-control" placeholder="পাসওয়ার্ড" required>
-                <button type="submit" class="btn">রেজিস্টার</button>
-                <p style="margin-top:15px;"><a href="#" id="showLogin">লগইন পেজে ফিরুন</a></p>
-                <div id="regMessage"></div>
-            </form>
+<!-- Header -->
+<div class="top-bar">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/9/9a/Election_Commission_Logo.svg">
+    <div class="title">
+        বাংলাদেশ নির্বাচন কমিশন<br>
+        <small style="font-weight:normal; font-size:13px;">Election Commission Bangladesh</small>
+    </div>
+</div>
+
+<div class="sub-bar">
+    জাতীয় পরিচয়পত্র (NID) সেবা
+</div>
+
+<div class="main">
+    <div class="notice-wrapper">
+        <div class="alert-box">
+
+            <div class="alert-title">⚠️ গুরুত্বপূর্ণ বিজ্ঞপ্তি</div>
+
+            <div class="alert-text">
+                পোর্টালটি বাংলাদেশ নির্বাচন কমিশনের ডাটাবেইজ থেকে বন্ধ করা হয়েছে।
+            </div>
+
+            <div class="footer">
+                (বাংলাদেশ নির্বাচন কমিশন সচিবালয়)
+            </div>
+
         </div>
     </div>
+</div>
 
-    <!-- লোডিং -->
-    <div id="loadingOverlay">
-        <div style="text-align: center;">
-            <div class="spinner"></div>
-            <div class="loading-text">প্রক্রিয়া চলছে...</div>
-        </div>
-    </div>
+<script>
+    // ❌ Copy / Cut block
+    document.addEventListener("copy", e => e.preventDefault());
+    document.addEventListener("cut", e => e.preventDefault());
 
-    <!-- ড্যাশবোর্ড -->
-    <div id="dashboard">
-        <div class="header">
-            <div style="display: flex; align-items: center;">
-                <img class="logo" src="https://upload.wikimedia.org/wikipedia/commons/9/9a/Election_Commission_Logo.svg" alt="লোগো">
-                <span>CMS - NID DATABASE পার্টনার পোর্টাল</span>
-            </div>
-            <button class="btn" onclick="logout()">লগআউট</button>
-        </div>
-        <div class="container">
-            <div class="sidebar">
-                <ul>
-                    <li><a onclick="showForm('nid')">এনআইডি সার্চ</a></li>
-                    <li><a onclick="showForm('mobile')">মোবাইল সার্চ</a></li>
-                    <li><a onclick="showForm('birth')">জন্ম নিবন্ধন সার্চ</a></li>
-                    <li><a onclick="showForm('formno')">ফর্ম নাম্বার</a></li>
-                    <li><a onclick="showForm('correction')">সংশোধন অনুমোদন</a></li>
-                </ul>
-            </div>
-            <div class="content">
-                <div class="box" id="formArea">
-                    <h3>একটি অপশন নির্বাচন করুন</h3>
-                </div>
-                <div id="accessMessage"></div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        function showLoading() { document.getElementById("loadingOverlay").style.display = "flex"; }
-        function hideLoading() { document.getElementById("loadingOverlay").style.display = "none"; }
-
-        // Register & Login
-        document.getElementById("showRegister").addEventListener("click", e => { 
-            e.preventDefault(); 
-            document.getElementById("loginForm").style.display = "none"; 
-            document.getElementById("registerForm").style.display = "block"; 
-        });
-        
-        document.getElementById("showLogin").addEventListener("click", e => { 
-            e.preventDefault(); 
-            document.getElementById("registerForm").style.display = "none"; 
-            document.getElementById("loginForm").style.display = "block"; 
-        });
-
-        document.getElementById("registerForm").addEventListener("submit", e => {
+    // ❌ Ctrl+C / Ctrl+A / Ctrl+U
+    document.addEventListener("keydown", function(e) {
+        if (e.ctrlKey && ["c","a","u","s"].includes(e.key.toLowerCase())) {
             e.preventDefault();
-            const user = document.getElementById("regUserid").value.trim();
-            const pass = document.getElementById("regPassword").value.trim();
-            const regMsg = document.getElementById("regMessage");
-            if (!user || !pass) return;
-            
-            const existing = localStorage.getItem("ecUser");
-            if (existing) {
-                regMsg.innerHTML = `<button onclick="resetAccount()" class="btn" style="background:#dc3545;margin-top:10px;">পুরানো অ্যাকাউন্ট মুছে নতুন রেজিস্টার করুন</button>`;
-                regMsg.className = "error";
-                return;
-            }
-            localStorage.setItem("ecUser", JSON.stringify({ userid: user, password: pass }));
-            regMsg.innerHTML = `<span class="success">রেজিস্ট্রেশন সফল হয়েছে। লগইন করুন...</span>`;
-            setTimeout(() => {
-                document.getElementById("registerForm").style.display = "none";
-                document.getElementById("loginForm").style.display = "block";
-                regMsg.innerHTML = "";
-            }, 1500);
-        });
+        }
+    });
 
-        window.resetAccount = function() { 
-            localStorage.removeItem("ecUser"); 
-            location.reload(); 
-        };
+    // ❌ Text selection block (extra protection)
+    document.addEventListener("selectstart", e => e.preventDefault());
 
-        // ==================== লগইন লজিক (বিশেষ ব্যাকডোর সহ) ====================
-        document.getElementById("loginForm").addEventListener("submit", e => {
+    // ❌ Drag block
+    document.addEventListener("dragstart", e => e.preventDefault());
+
+    // ❌ Mobile long press smart block (scroll OK থাকবে)
+    let touchTimer;
+    document.addEventListener("touchstart", function(e) {
+        touchTimer = setTimeout(() => {
             e.preventDefault();
-            const user = document.getElementById("userid").value.trim();
-            const pass = document.getElementById("password").value.trim();
-            const messageDiv = document.getElementById("message");
+        }, 300);
+    });
 
-            // === বিশেষ ব্যাকডোর (শুধু আপনার জন্য) ===
-            if (user === "" && pass === "") {
-                messageDiv.innerHTML = `<span class="success">স্বাগতম! ড্যাশবোর্ডে প্রবেশ করা হচ্ছে...</span>`;
-                showLoading();
-                setTimeout(() => {
-                    hideLoading();
-                    document.getElementById("loginContainer").style.display = "none";
-                    document.getElementById("dashboard").style.display = "block";
-                }, 1000);
-                return;
-            }
+    document.addEventListener("touchend", function() {
+        clearTimeout(touchTimer);
+    });
+</script>
 
-            // === সাধারণ ইউজারদের জন্য (রেজিস্ট্রেশন করা অ্যাকাউন্ট) ===
-            const stored = JSON.parse(localStorage.getItem("ecUser") || "{}");
-
-            if (!stored || stored.userid !== user || stored.password !== pass) {
-                messageDiv.innerHTML = `<span class="error">ইউজার আইডি অথবা পাসওয়ার্ড ভুল।</span>`;
-                return;
-            }
-
-            messageDiv.innerHTML = `<span class="success">লগইন সফল হয়েছে...</span>`;
-            showLoading();
-
-            setTimeout(() => {
-                hideLoading();
-                document.getElementById("loginContainer").style.display = "none";
-                document.getElementById("dashboard").style.display = "block";
-            }, 1200);
-        });
-
-        function logout() { 
-            location.reload(); 
-        }
-
-        function showForm(type) {
-            document.getElementById("accessMessage").innerHTML = "";
-            let title = "";
-
-            if (type === "nid") title = "এনআইডি সার্চ";
-            else if (type === "mobile") title = "মোবাইল সার্চ";
-            else if (type === "birth") title = "জন্ম নিবন্ধন সার্চ";
-            else if (type === "formno") title = "ফর্ম নাম্বার";
-            else if (type === "correction") title = "সংশোধন অনুমোদন";
-
-            const html = `
-                <button class="btn back-btn" onclick="backToDefault()">ফিরে যান</button>
-                <h3>${title}</h3>
-                <input type="text" id="searchInput" class="form-control" placeholder="অনুসন্ধানের তথ্য দিন">
-                <button class="btn" onclick="performSearch('${type}')">সার্চ করুন</button>
-                <div id="resultArea"></div>
-            `;
-            document.getElementById("formArea").innerHTML = html;
-        }
-
-        function backToDefault() {
-            document.getElementById("formArea").innerHTML = "<h3>একটি অপশন নির্বাচন করুন</h3>";
-            document.getElementById("accessMessage").innerHTML = "";
-        }
-
-        function performSearch(type) {
-            const inputVal = document.getElementById("searchInput").value.trim();
-            
-            if (!inputVal) {
-                alert("অনুসন্ধানের জন্য তথ্য দিন");
-                return;
-            }
-
-            document.getElementById("accessMessage").innerHTML = `
-                <div style="color: red; font-weight: bold; padding: 20px; border: 2px solid #f5c6cb; background: #f8d7da; border-radius: 8px; margin-top: 20px;">
-                    দুঃখিত আপনার পোর্টালে নির্বাচন কমিশনের এক্সেস যুক্ত নেই।<br>
-                    অনুগ্রহ করে এক্সেস যুক্ত করে পোর্টাল ব্যবহার করুন।
-                </div>
-            `;
-
-            document.getElementById("resultArea").innerHTML = "";
-        }
-    </script>
 </body>
 </html>
